@@ -9,19 +9,22 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 class RegisterRequest(BaseModel):
-    """Registration payload with email, password, and display name."""
+    """Registration payload with email, password, display name, and optional bio."""
 
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     name: str = Field(min_length=1, max_length=255)
+    bio: str | None = Field(default=None, max_length=2000)
 
 
 class UserResponse(BaseModel):
-    """Public user info returned after registration."""
+    """User info returned after registration."""
 
     id: int | str
     email: str
     name: str
+    bio: str | None = None
+    profile_image: str | None = None
     is_active: bool
     is_verified: bool
 
@@ -52,7 +55,7 @@ async def register(body: RegisterRequest) -> UserResponse:
         user = await _auth.repo.create(
             email=body.email,
             hashed_password=hashed,
-            extra={"name": body.name},
+            extra={"name": body.name, "bio": body.bio},
         )
     except UserAlreadyExists:
         raise HTTPException(status_code=409, detail="Email already registered")
@@ -61,6 +64,8 @@ async def register(body: RegisterRequest) -> UserResponse:
         id=user.id,
         email=user.email,
         name=getattr(user, "name", ""),
+        bio=getattr(user, "bio", None),
+        profile_image=getattr(user, "profile_image", None),
         is_active=user.is_active,
         is_verified=user.is_verified,
     )
