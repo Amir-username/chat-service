@@ -17,6 +17,8 @@ from app.database import async_session_factory, init_db
 from app.models import User
 from app.profile_routes import router as profile_router
 from app.profile_routes import set_auth as set_profile_auth
+from app.private_chat import router as private_router
+from app.private_chat import set_auth as set_private_auth
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -44,6 +46,7 @@ auth = FastAuth(
 set_auth_routes_auth(auth)
 set_chat_auth(auth)
 set_profile_auth(auth)
+set_private_auth(auth)
 
 # ---------------------------------------------------------------------------
 # App
@@ -72,6 +75,9 @@ app.include_router(chat_router)
 
 # Mount profile routes
 app.include_router(profile_router)
+
+# Mount private chat routes (REST + WebSocket)
+app.include_router(private_router)
 
 # Serve uploaded profile images as static files
 _UPLOADS = Path(__file__).resolve().parent.parent / "uploads"
