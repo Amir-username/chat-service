@@ -6,6 +6,7 @@ from pathlib import Path
 from fastapi import (
     APIRouter,
     HTTPException,
+    Query,
     Request,
     UploadFile,
     File,
@@ -102,6 +103,31 @@ def _user_to_profile(user: UserProtocol) -> dict:
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+@router.get("/search", response_model=list[ProfileResponse])
+async def search_users(
+    q: str = Query(..., min_length=1, max_length=100, description="Search query"),
+    limit: int = Query(default=20, ge=1, le=100),
+) -> list[ProfileResponse]:
+    """Search users by name (case-insensitive partial match).
+
+    Useful for finding users to start a private chat with.
+    """
+    from sqlalchemy import select
+
+    from app.models import User
+
+    async with async_session_factory() as session:
+        stmt = (
+            select(User)
+            .where(User.name.ilike(f"%{q}%"))
+            .limit(limit)
+        )
+        result = await session.execute(stmt)
+        users = result.scalars().all()
+
+    return [ProfileResponse(**_user_to_profile(u)) for u in users]
+
+
 @router.get("/me/profile", response_model=ProfileResponse)
 async def get_my_profile(request: Request) -> ProfileResponse:
     """Return the authenticated user's full profile."""
