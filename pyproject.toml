@@ -5,7 +5,7 @@ description = "Simple WebSocket chat API with JWT authentication (fast-auth)"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fast-auth[sqlalchemy] @ file:////home/amir/Desktop/amir/python/packages/fast-auth",
+    "fast-auth[sqlalchemy] @ https://github.com/Amir-username/chat-frontend",
     "aiosqlite>=0.20.0",
     "uvicorn[standard]>=0.30.0",
     "websockets>=16.0",
