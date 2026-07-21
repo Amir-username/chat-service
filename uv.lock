@@ -188,7 +188,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aiosqlite", specifier = ">=0.20.0" },
-    { name = "fast-auth", extras = ["sqlalchemy"], directory = "/home/amir/Desktop/amir/python/packages/fast-auth" },
+    { name = "fast-auth", extras = ["sqlalchemy"], directory = "https://github.com/Amir-username/fast-auth" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30.0" },
     { name = "websockets", specifier = ">=16.0" },
 ]
@@ -248,7 +248,7 @@ wheels = [
 [[package]]
 name = "fast-auth"
 version = "0.1.0"
-source = { directory = "/home/amir/Desktop/amir/python/packages/fast-auth" }
+source = { directory = "https://github.com/Amir-username/fast-auth" }
 dependencies = [
     { name = "argon2-cffi" },
     { name = "clear" },
