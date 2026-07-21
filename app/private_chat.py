@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 from fast_auth import FastAuth, TokenExpired, TokenInvalid, TokenRevoked
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.database import async_session_factory
 from app.models import PrivateChat, PrivateMessage, User
@@ -177,12 +178,22 @@ class ChatDetailResponse(BaseModel):
     created_at: str
 
 
+class ReplyPreview(BaseModel):
+    """Snippet of the message being replied to (Telegram-style)."""
+    id: int
+    sender_id: int
+    sender_name: str
+    content: str
+    created_at: str
+
+
 class MessageResponse(BaseModel):
     id: int
     chat_id: int
     sender_id: int
     sender_name: str
     content: str
+    reply_to: ReplyPreview | None = None
     created_at: str
 
     model_config = {"from_attributes": True}
@@ -198,6 +209,7 @@ class ChatWithMessagesResponse(BaseModel):
 
 class SendMessageRequest(BaseModel):
     content: str = Field(..., min_length=1, max_length=5000)
+    reply_to_id: int | None = Field(default=None, description="ID of the message to reply to")
 
 
 # ---------------------------------------------------------------------------
@@ -218,7 +230,7 @@ def _fmt_chat_item(chat: PrivateChat, my_id: int) -> dict:
 
 
 def _fmt_message(msg: PrivateMessage) -> dict:
-    return {
+    d: dict = {
         "id": msg.id,
         "chat_id": msg.chat_id,
         "sender_id": msg.sender_id,
@@ -226,6 +238,17 @@ def _fmt_message(msg: PrivateMessage) -> dict:
         "content": msg.content,
         "created_at": msg.created_at.isoformat(),
     }
+    if msg.reply_to is not None:
+        d["reply_to"] = {
+            "id": msg.reply_to.id,
+            "sender_id": msg.reply_to.sender_id,
+            "sender_name": getattr(msg.reply_to.sender, "name", msg.reply_to.sender.email),
+            "content": msg.reply_to.content,
+            "created_at": msg.reply_to.created_at.isoformat(),
+        }
+    else:
+        d["reply_to"] = None
+    return d
 
 
 # ---------------------------------------------------------------------------
@@ -305,6 +328,7 @@ async def get_chat_messages(
         msg_stmt = (
             select(PrivateMessage)
             .where(PrivateMessage.chat_id == chat_id)
+            .options(joinedload(PrivateMessage.reply_to).joinedload(PrivateMessage.sender))
             .order_by(desc(PrivateMessage.created_at))
             .offset(offset)
             .limit(limit)
@@ -340,16 +364,26 @@ async def send_message(
     async with async_session_factory() as session:
         chat = await _get_chat_with_access(session, chat_id, me.id)
 
+        # Validate reply_to_id if provided
+        reply_to_id = body.reply_to_id
+        if reply_to_id is not None:
+            replied_msg = await session.get(PrivateMessage, reply_to_id)
+            if replied_msg is None or replied_msg.chat_id != chat_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid reply_to_id: message not found in this chat",
+                )
+
         msg = PrivateMessage(
             chat_id=chat_id,
             sender_id=me.id,
             content=body.content.strip(),
+            reply_to_id=reply_to_id,
         )
         session.add(msg)
         await session.commit()
         await session.refresh(msg)
-        # Load sender relationship
-        await session.refresh(msg, ["sender"])
+        await session.refresh(msg, ["sender", "reply_to"])
 
     msg_dict = _fmt_message(msg)
 
@@ -373,8 +407,10 @@ async def private_chat_ws(websocket: WebSocket, chat_id: int) -> None:
     Connect: ws://host/private/ws/chat/{chat_id}?token=<access_token>
 
     Client sends:   {"content": "hello"}
+                    {"content": "reply", "reply_to_id": 5}
     Client receives: {"type": "message", "id": 1, "chat_id": 1, "sender_id": 2,
                       "sender_name": "Bob", "content": "hello",
+                      "reply_to": null,
                       "created_at": "..."}
     """
     # --- authenticate ---
@@ -410,6 +446,7 @@ async def private_chat_ws(websocket: WebSocket, chat_id: int) -> None:
         stmt = (
             select(PrivateMessage)
             .where(PrivateMessage.chat_id == chat_id)
+            .options(joinedload(PrivateMessage.reply_to).joinedload(PrivateMessage.sender))
             .order_by(desc(PrivateMessage.id))
             .limit(50)
         )
@@ -437,17 +474,26 @@ async def private_chat_ws(websocket: WebSocket, chat_id: int) -> None:
             if not content:
                 continue
 
+            reply_to_id = data.get("reply_to_id")
+
             # Persist to DB
             async with async_session_factory() as session:
+                # Validate reply_to_id if provided
+                if reply_to_id is not None:
+                    replied_msg = await session.get(PrivateMessage, reply_to_id)
+                    if replied_msg is None or replied_msg.chat_id != chat_id:
+                        continue  # silently skip invalid replies
+
                 msg = PrivateMessage(
                     chat_id=chat_id,
                     sender_id=user.id,
                     content=content,
+                    reply_to_id=reply_to_id,
                 )
                 session.add(msg)
                 await session.commit()
                 await session.refresh(msg)
-                await session.refresh(msg, ["sender"])
+                await session.refresh(msg, ["sender", "reply_to"])
 
             msg_dict = {
                 "type": "message",

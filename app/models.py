@@ -60,6 +60,9 @@ class PrivateMessage(_Base):
         Integer, ForeignKey("users.id"), nullable=False, index=True
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
+    reply_to_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("private_messages.id"), nullable=True, index=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -69,3 +72,6 @@ class PrivateMessage(_Base):
     # Relationships
     chat: Mapped["PrivateChat"] = relationship(back_populates="messages")
     sender: Mapped["User"] = relationship(foreign_keys=[sender_id], lazy="joined")
+    reply_to: Mapped["PrivateMessage | None"] = relationship(
+        remote_side="PrivateMessage.id", lazy="joined"
+    )
