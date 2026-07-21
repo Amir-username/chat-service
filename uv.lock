@@ -188,19 +188,13 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aiosqlite", specifier = ">=0.20.0" },
-    { name = "fast-auth", extras = ["sqlalchemy"], directory = "https://github.com/Amir-username/fast-auth" },
+    { name = "fast-auth", extras = ["sqlalchemy"], git = "https://github.com/Amir-username/fast-auth" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30.0" },
     { name = "websockets", specifier = ">=16.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = []
-
-[[package]]
-name = "clear"
-version = "2.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/17/a0/04e3f6a87245d75956bd254f7e133493ed6e18b49e09c874204cbfe97f42/clear-2.0.0.tar.gz", hash = "sha256:fd6d42575ed65063edef3c46e65aa1b3fc05a144dc1691ba62033ffc35f46368", size = 2130, upload-time = "2023-02-10T14:43:15.648Z" }
 
 [[package]]
 name = "click"
@@ -248,10 +242,9 @@ wheels = [
 [[package]]
 name = "fast-auth"
 version = "0.1.0"
-source = { directory = "https://github.com/Amir-username/fast-auth" }
+source = { git = "https://github.com/Amir-username/fast-auth#1fc4927fce73ebb7650b9c615c5dc1309424d24b" }
 dependencies = [
     { name = "argon2-cffi" },
-    { name = "clear" },
     { name = "email-validator" },
     { name = "fastapi" },
     { name = "pydantic" },
@@ -265,36 +258,6 @@ dependencies = [
 sqlalchemy = [
     { name = "sqlalchemy", extra = ["asyncio"] },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiosqlite", marker = "extra == 'dev'", specifier = ">=0.20" },
-    { name = "argon2-cffi", specifier = ">=23.1" },
-    { name = "clear" },
-    { name = "email-validator", specifier = ">=2.1" },
-    { name = "fastapi", specifier = ">=0.110" },
-    { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.27" },
-    { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.6" },
-    { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5" },
-    { name = "mkdocstrings", extras = ["python"], marker = "extra == 'docs'", specifier = ">=0.25" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },
-    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7" },
-    { name = "pydantic", specifier = ">=2.5" },
-    { name = "pydantic-settings", specifier = ">=2.1" },
-    { name = "pyjwt", specifier = ">=2.8" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1" },
-    { name = "python-multipart", specifier = ">=0.0.9" },
-    { name = "python-multipart", marker = "extra == 'dev'", specifier = ">=0.0.9" },
-    { name = "redis", marker = "extra == 'redis'", specifier = ">=5.0,<6.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
-    { name = "sqlalchemy", extras = ["asyncio"], marker = "extra == 'dev'", specifier = ">=2.0.25" },
-    { name = "sqlalchemy", extras = ["asyncio"], marker = "extra == 'sqlalchemy'", specifier = ">=2.0.25" },
-    { name = "starlette", specifier = ">=0.36" },
-    { name = "uvicorn", extras = ["standard"], marker = "extra == 'dev'", specifier = ">=0.27" },
-]
-provides-extras = ["sqlalchemy", "redis", "dev", "docs"]
 
 [[package]]
 name = "fastapi"
