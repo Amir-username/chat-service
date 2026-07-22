@@ -6,5 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.139.2",
+    "aiosqlite>=0.20.0",
+    "websockets>=16.0",
     "fast-auth @ git+https://github.com/Amir-username/fast-auth.git"
 ]
