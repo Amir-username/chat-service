@@ -20,6 +20,8 @@ from app.profile_routes import set_auth as set_profile_auth
 from app.private_chat import router as private_router
 from app.private_chat import set_auth as set_private_auth
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
+
 
 # ---------------------------------------------------------------------------
 # Push FastAuth env vars so FastAuthConfig picks them up
@@ -55,6 +57,20 @@ app = FastAPI(
     title="Chat API",
     version="1.0.0",
     description="Simple WebSocket chat API with JWT authentication (fast-auth).",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",      # React/Vite default
+        "http://localhost:5173",      # Vite default
+        "http://127.0.0.1:3000",
+        "https://chat-frontend-psi-wine.vercel.app",   # Production
+        # Add more origins as needed
+    ],
+    allow_credentials=True,           # Important if using cookies/auth
+    allow_methods=["*"],              # Allow all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],              # Allow all headers
 )
 
 # Register fast-auth exception handlers (required for proper error responses)
