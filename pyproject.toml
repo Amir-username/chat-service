@@ -1,17 +1,10 @@
 [project]
-name = "chat-app"
+name = "chat-service"
 version = "0.1.0"
-description = "Simple WebSocket chat API with JWT authentication (fast-auth)"
+description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fast-auth[sqlalchemy] @ git+https://github.com/Amir-username/fast-auth",
-    "aiosqlite>=0.20.0",
-    "uvicorn[standard]>=0.30.0",
-    "websockets>=16.0",
+    "fastapi[standard]>=0.139.2",
+    "fast-auth @ git+https://github.com/Amir-username/fast-auth.git"
 ]
-
-[dependency-groups]
-dev = []
-
-
