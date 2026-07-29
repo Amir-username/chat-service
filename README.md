@@ -2,7 +2,7 @@
 
 A real-time chat API built with **FastAPI**, **WebSockets**, and **[fast-auth](https://github.com/Amir-username/fast-auth)**. This is the backend service that powers the [chat-frontend](https://github.com/Amir-username/chat-frontend) React application.
 
-**Live Demo:** [https://chat-frontend-psi-wine.vercel.app/](https://chat-frontend-psi-wine.vercel.app/)
+**Live Demo:** [https://chat-service.fastapicloud.dev/docs](https://chat-service.fastapicloud.dev/docs)
 
 ---
 
